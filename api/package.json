@@ -16,7 +16,7 @@
     "precommit": "lint-staged",
     "format": "prettier --write \"**/*.ts\"",
     "format:check": "prettier --check \"**/*.ts\"",
-    "gen:supabase:types": "touch ./src/generated.ts && supabase gen types typescript --schema public > ./src/generated.ts --project-id piyguawzwntxebmenzkm"
+    "gen:supabase:types": "touch ./src/generated/db.ts && supabase gen types typescript --schema public > ./src/generated/db.ts --project-id piyguawzwntxebmenzkm"
   },
   "author": "LangChain",
   "license": "MIT",

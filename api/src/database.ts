@@ -2,13 +2,12 @@ import { Document } from 'langchain/document';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import {
-  ARXIV_EMBEDDINGS_TABLE,
-  ARXIV_PAPERS_TABLE,
-  ARXIV_QA_TABLE,
-  Database,
-} from 'generated.js';
+import { Database } from 'generated/db.js';
 import { ArxivPaperNote } from 'notes/prompt.js';
+
+export const ARXIV_PAPERS_TABLE = 'arxiv_papers';
+export const ARXIV_EMBEDDINGS_TABLE = 'arxiv_embeddings';
+export const ARXIV_QA_TABLE = 'arxiv_question_answering';
 
 export class SupabaseDatabase {
   vectorStore: SupabaseVectorStore;

@@ -3,3 +3,4 @@ dist
 .turbo
 .env.development.local
 pdfs/**
+src/generated/**

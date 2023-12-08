@@ -53,7 +53,6 @@ internal/
 !tests/cases/projects/NodeModulesSearch/**/*
 !tests/baselines/reference/project/nodeModules*/**/*
 .idea
-yarn.lock
 yarn-error.log
 .parallelperf.*
 tests/baselines/reference/dt
