@@ -1,8 +1,7 @@
 {
-  "name": "arxiv-paper-rag",
+  "name": "arxiv-rag-youtube",
   "private": true,
   "version": "1.0.0",
-  "main": "index.js",
   "description": "Preform RAG for question answering over Arxiv papers.",
   "author": "Brace Sproul",
   "license": "MIT",
