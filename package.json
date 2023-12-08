@@ -1,0 +1,25 @@
+{
+  "name": "arxiv-paper-rag",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "Preform RAG for question answering over Arxiv papers.",
+  "author": "Brace Sproul",
+  "license": "MIT",
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "start": "echo TODO IMPLEMENT ME",
+    "start:api": "yarn turbo run start --filter=api",
+    "start:web": "yarn turbo run start --filter=web",
+    "build": "yarn turbo run build",
+    "lint": "yarn turbo run lint",
+    "format": "yarn turbo run format",
+    "dev": "yarn turbo run dev"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  }
+}

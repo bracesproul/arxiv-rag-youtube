@@ -1,0 +1,50 @@
+{
+  "name": "api",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/server.js",
+  "type": "module",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "yarn gen:supabase:types && tsc --declaration --outDir dist/",
+    "start": "tsx --experimental-wasm-modules -r dotenv/config src/server.ts dotenv_config_path=.env.development.local",
+    "start:dist": "yarn build && node -r dotenv/config dist/server.js",
+    "lint": "eslint src",
+    "lint:fix": "yarn lint --fix",
+    "precommit": "lint-staged",
+    "format": "prettier --write \"**/*.ts\"",
+    "format:check": "prettier --check \"**/*.ts\"",
+    "gen:supabase:types": "touch ./src/generated.ts && supabase gen types typescript --schema public > ./src/generated.ts --project-id piyguawzwntxebmenzkm"
+  },
+  "author": "LangChain",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.4",
+    "axios": "^1.6.1",
+    "express": "^4.18.2",
+    "langchain": "^0.0.202",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.2",
+    "@types/express": "^4.17.21",
+    "@types/pdf-parse": "^1.1.4",
+    "@typescript-eslint/eslint-plugin": "^5.51.0",
+    "@typescript-eslint/parser": "^5.51.0",
+    "dotenv": "^16.0.3",
+    "eslint": "^8.33.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-unused-imports": "^3.0.0",
+    "prettier": "^2.8.3",
+    "supabase": ">=1.8.1",
+    "tsx": "^3.12.3",
+    "typescript": "^5.0.0"
+  }
+}
