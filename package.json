@@ -10,7 +10,6 @@
     "web"
   ],
   "scripts": {
-    "start": "echo TODO IMPLEMENT ME",
     "start:api": "yarn turbo run start --filter=api",
     "start:web": "yarn turbo run start --filter=web",
     "build": "yarn turbo run build",

@@ -116,11 +116,11 @@ yarn build
 ### Start the API Server
 
 ```shell
-yarn start
+yarn start:api
 ```
 
 ### Start the Web Server
 
 ```shell
-yarn dev:web
+yarn start:web
 ```
