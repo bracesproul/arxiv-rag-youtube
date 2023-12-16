@@ -76,20 +76,20 @@ export class SupabaseDatabase {
     notes: Array<ArxivPaperNote>;
     name: string;
   }): Promise<void> {
-    const { error } = await this.client.from(ARXIV_PAPERS_TABLE).insert({
+    const { error } = await this.client.from(ARXIV_PAPERS_TABLE).insert([{
       paper,
       arxiv_url: url,
       notes,
       name,
-    });
+    }]);
     if (error) {
-      throw new Error('Error adding paper to database');
+      throw new Error('Error adding paper to database' + JSON.stringify(error, null, 2));
     }
   }
 
   async getPaper(
     url: string
-  ): Promise<Database['public']['Tables']['arxiv_papers']['Row']> {
+  ): Promise<Database['public']['Tables']['arxiv_papers']['Row'] | null> {
     const { data, error } = await this.client
       .from(ARXIV_PAPERS_TABLE)
       .select()
@@ -97,7 +97,7 @@ export class SupabaseDatabase {
 
     if (error || !data) {
       console.error('Error getting paper from database');
-      throw error;
+      return null;
     }
     return data[0];
   }

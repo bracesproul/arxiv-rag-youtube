@@ -39,8 +39,8 @@ create extension vector;
 
 -- Create tables for storing Arxiv papers, embeddings, and question answering data
 CREATE TABLE arxiv_papers (
-  id UUID PRIMARY KEY,
-  created_at TIMESTAMPTZ,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
   paper TEXT,
   arxiv_url TEXT,
   notes JSONB[],
@@ -48,16 +48,16 @@ CREATE TABLE arxiv_papers (
 );
 
 CREATE TABLE arxiv_embeddings (
-  id UUID PRIMARY KEY,
-  created_at TIMESTAMPTZ,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
   content TEXT,
-  embedding TEXT,
+  embedding vector,
   metadata JSONB
 );
 
 CREATE TABLE arxiv_question_answering (
-  id UUID PRIMARY KEY,
-  created_at TIMESTAMPTZ,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
   question TEXT,
   answer TEXT,
   followup_questions TEXT[],
@@ -70,10 +70,10 @@ create function match_documents (
   match_count int DEFAULT null,
   filter jsonb DEFAULT '{}'
 ) returns table (
-  id bigint,
+  id UUID,
   content text,
   metadata jsonb,
-  embedding jsonb,
+  embedding vector,
   similarity float
 )
 language plpgsql
@@ -85,7 +85,7 @@ begin
     id,
     content,
     metadata,
-    (embedding::text)::jsonb as embedding,
+    embedding,
     1 - (arxiv_embeddings.embedding <=> query_embedding) as similarity
   from arxiv_embeddings
   where metadata @> filter

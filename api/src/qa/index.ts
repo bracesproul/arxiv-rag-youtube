@@ -24,6 +24,9 @@ async function qaModel(
   });
   const chain =
     QA_OVER_PAPER_PROMPT.pipe(modelWithTools).pipe(answerOutputParser);
+    if (!documents) {
+      throw new Error("No documents found")
+    }
   const documentsAsString = formatDocumentsAsString(documents);
   const notesAsString = notes.map((note) => note.note).join('\n');
   const response = await chain.invoke({

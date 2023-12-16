@@ -1,118 +1,226 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import * as z from "zod"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { Button } from "@/components/ui/button";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form"
+import { ChevronsUpDown } from "lucide-react"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { ArxivPaperNote } from "./api/take_notes";
+import { QAResponse } from "./api/qa";
 
-const inter = Inter({ subsets: ['latin'] })
+const submitPaperFormSchema = z.object({
+  paperUrl: z.string(),
+  name: z.string(),
+  pagesToDelete: z.string().optional(),
+})
+
+const questionFormSchema = z.object({
+  question: z.string(),
+})
+
+function processPagesToDelete(pagesToDelete: string): Array<number> {
+  const numArr = pagesToDelete.split(",").map((num) => parseInt(num.trim()));
+  return numArr;
+}
+
+type SubmittedPaperData = {
+  paperUrl: string;
+  name: string;
+  pagesToDelete?: Array<number>;
+}
 
 export default function Home() {
+  const [submittedPaperData, setSubmittedPaperData] = useState<SubmittedPaperData | undefined>();
+  const [notes, setNotes] = useState<Array<ArxivPaperNote> | undefined>();
+  const [answers, setAnswers] = useState<Array<QAResponse> | undefined>();
+  const submitPaperForm = useForm<z.infer<typeof submitPaperFormSchema>>({
+    resolver: zodResolver(submitPaperFormSchema),
+  })
+  const questionForm = useForm<z.infer<typeof questionFormSchema>>({
+    resolver: zodResolver(questionFormSchema),
+  })
+
+  async function onPaperSubmit(values: z.infer<typeof submitPaperFormSchema>) {
+    setSubmittedPaperData({
+      ...values,
+      pagesToDelete: values.pagesToDelete ? processPagesToDelete(values.pagesToDelete) : undefined,
+    });
+    const response = await fetch("/api/take_notes", {
+      method: "POST",
+      body: JSON.stringify(values),
+    }).then((res) => {
+      if (res.ok) {
+        return res.json();
+      }
+      return null;
+    });
+    if (response) {
+      console.log(response);
+      setNotes(response);
+    } else {
+      throw new Error("Something went wrong taking notes");
+    }
+  }
+
+  async function onQuestionSubmit(values: z.infer<typeof questionFormSchema>) {
+    if (!submittedPaperData) {
+      throw new Error("No paper submitted");
+    }
+    const data = {
+      ...values,
+      paperUrl: submittedPaperData.paperUrl,
+    }
+    const response = await fetch("/api/qa", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }).then((res) => {
+      if (res.ok) {
+        return res.json();
+      }
+      return null;
+    });
+    if (response) {
+      console.log(response);
+      setAnswers(response);
+    } else {
+      throw new Error("Something went wrong taking notes");
+    }
+  }
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-row gap-5 mx-auto mt-3">
+        {/** Add paper */}
+        <div className="flex flex-col gap-2 border-[1px] border-gray-400 rounded-md p-2">
+          <Form {...submitPaperForm}>
+            <form onSubmit={submitPaperForm.handleSubmit(onPaperSubmit)} className="space-y-8">
+              <FormField
+                control={submitPaperForm.control}
+                name="paperUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Paper URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://arxiv.org/pdf/2305.15334.pdf" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The URL to the PDF paper you want to submit.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={submitPaperForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Gorilla: Large Language Model Connected with Massive APIs" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The name of the paper.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <p className="font-normal">Delete pages?</p>
+                  <ChevronsUpDown className="h-4 w-4" />
+                  <span className="sr-only">Toggle</span>
+                </Button>
+              </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <FormField
+                    control={submitPaperForm.control}
+                    name="pagesToDelete"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pages to delete</FormLabel>
+                        <FormControl>
+                          <Input placeholder="10, 11, 12" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          The pages to delete from the paper.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+              <Button type="submit">Submit</Button>
+            </form>
+          </Form>
         </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        {/** QA on paper */}
+        <div className="flex flex-col gap-2 border-[1px] border-gray-400 rounded-md p-2">
+          <Form {...questionForm}>
+            <form onSubmit={questionForm.handleSubmit(onQuestionSubmit)} className="space-y-8">
+              <FormField
+                control={questionForm.control}
+                name="question"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Question</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Why is the sky blue" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The question to ask about the paper.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Submit</Button>
+            </form>
+          </Form>
+        </div>
+    </div>
+    <div className="flex flex-row gap-5 mx-auto mt-3">
+    {notes && notes.length > 0 && (
+        <div className="flex flex-col gap-2 max-w-[600px]">
+          <h2>Notes</h2>
+          <div className="flex flex-col gap-2">
+            {notes.map((note, index) => (
+              <div className="flex flex-col gap-2 p-2" key={index}>
+                <p>{index + 1}. {note.note}</p>
+                <p className="text-sm text-gray-600">[{note.pageNumbers.join(", ")}]</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+          {answers && answers.length > 0 && (
+        <div className="flex flex-col gap-2 max-w-[600px]">
+          <h2>Answers</h2>
+          <div className="flex flex-col gap-2">
+            {answers.map((answer, index) => (
+              <div className="flex flex-col gap-2 p-2" key={index}>
+                <p>{index + 1}. {answer.answer}</p>
+                <p>Followup questions:</p>
+                <div className='flex flex-col gap-2 p-2'>
+                  {answer.followupQuestions.map((followup, index) => (
+                    <p key={index} className="text-sm text-gray-600">{followup}</p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+    )}
+    </div>
+    </div>
   )
 }
