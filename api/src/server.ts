@@ -1,6 +1,6 @@
-import express from 'express';
-import { takeNotes } from 'notes/index.js';
-import { qaOnPaper } from 'qa/index.js';
+import express from "express";
+import { takeNotes } from "notes/index.js";
+import { qaOnPaper } from "qa/index.js";
 
 function processPagesToDelete(pagesToDelete: string): Array<number> {
   const numArr = pagesToDelete.split(",").map((num) => parseInt(num.trim()));
@@ -13,22 +13,24 @@ function main() {
 
   app.use(express.json());
 
-  app.get('/', (_req, res) => {
+  app.get("/", (_req, res) => {
     // health check
-    res.status(200).send('ok');
+    res.status(200).send("ok");
   });
 
-  app.post('/take_notes', async (req, res) => {
+  app.post("/take_notes", async (req, res) => {
     const { paperUrl, name, pagesToDelete } = req.body;
     // convert pagesToDelete back to array numbers
-    const pagesToDeleteArray = pagesToDelete ? processPagesToDelete(pagesToDelete) : undefined;
-    console.log(pagesToDeleteArray)
+    const pagesToDeleteArray = pagesToDelete
+      ? processPagesToDelete(pagesToDelete)
+      : undefined;
+    console.log(pagesToDeleteArray);
     const notes = await takeNotes(paperUrl, name, pagesToDeleteArray);
     res.status(200).send(notes);
     return;
   });
 
-  app.post('/qa', async (req, res) => {
+  app.post("/qa", async (req, res) => {
     const { paperUrl, question } = req.body;
     const qa = await qaOnPaper(question, paperUrl);
     res.status(200).send(qa);

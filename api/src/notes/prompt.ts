@@ -1,36 +1,36 @@
-import { ChatPromptTemplate } from 'langchain/prompts';
-import { BaseMessageChunk } from 'langchain/schema';
-import type { OpenAI as OpenAIClient } from 'openai';
+import { ChatPromptTemplate } from "langchain/prompts";
+import { BaseMessageChunk } from "langchain/schema";
+import type { OpenAI as OpenAIClient } from "openai";
 
 export const NOTES_TOOL_SCHEMA: OpenAIClient.ChatCompletionTool = {
-  type: 'function',
+  type: "function",
   function: {
-    name: 'formatNotes',
-    description: 'Format the notes response',
+    name: "formatNotes",
+    description: "Format the notes response",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
         notes: {
-          type: 'array',
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
               note: {
-                type: 'string',
-                description: 'The notes',
+                type: "string",
+                description: "The notes",
               },
               pageNumbers: {
-                type: 'array',
+                type: "array",
                 items: {
-                  type: 'number',
-                  description: 'The page number(s) of the note',
+                  type: "number",
+                  description: "The page number(s) of the note",
                 },
               },
             },
           },
         },
       },
-      required: ['notes'],
+      required: ["notes"],
     },
   },
 };
@@ -40,7 +40,9 @@ export type ArxivPaperNote = {
   pageNumbers: number[];
 };
 
-export const outputParser = (output: BaseMessageChunk): Array<ArxivPaperNote> => {
+export const outputParser = (
+  output: BaseMessageChunk
+): Array<ArxivPaperNote> => {
   const toolCalls = output.additional_kwargs.tool_calls;
   if (!toolCalls) {
     throw new Error("Missing 'tool_calls' in notes output");
@@ -56,7 +58,7 @@ export const outputParser = (output: BaseMessageChunk): Array<ArxivPaperNote> =>
 
 export const NOTE_PROMPT = ChatPromptTemplate.fromMessages([
   [
-    'ai',
+    "ai",
     `Take notes the following scientific paper.
 This is a technical paper outlining a computer science technique.
 The goal is to be able to create a complete understanding of the paper after reading all notes.
@@ -73,5 +75,5 @@ Respond with a JSON array with two keys: "note" and "pageNumbers".
 "note" will be the specific note, and pageNumbers will be an array of numbers (if the note spans more than one page).
 Take a deep breath, and work your way through the paper step by step.`,
   ],
-  ['human', 'Paper: {paper}'],
+  ["human", "Paper: {paper}"],
 ]);

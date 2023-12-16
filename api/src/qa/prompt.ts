@@ -1,10 +1,10 @@
-import { ChatPromptTemplate } from 'langchain/prompts';
-import { BaseMessageChunk } from 'langchain/schema';
-import { OpenAI as OpenAIClient } from 'openai';
+import { ChatPromptTemplate } from "langchain/prompts";
+import { BaseMessageChunk } from "langchain/schema";
+import { OpenAI as OpenAIClient } from "openai";
 
 export const QA_OVER_PAPER_PROMPT = ChatPromptTemplate.fromMessages([
   [
-    'ai',
+    "ai",
     `You are a tenured professor of computer science helping a student with their research.
 The student has a question regarding a paper they are reading.
 Here are their notes on the paper:
@@ -16,30 +16,30 @@ And here are some relevant parts of the paper relating to their question
 Answer the student's question in the context of the paper. You should also suggest followup questions.
 Take a deep breath, and think through your reply carefully, step by step.`,
   ],
-  ['human', 'Question: {question}'],
+  ["human", "Question: {question}"],
 ]);
 
 export const ANSWER_QUESTION_TOOL_SCHEMA: OpenAIClient.ChatCompletionTool = {
-  type: 'function',
+  type: "function",
   function: {
-    name: 'questionAnswer',
-    description: 'The answer to the question',
+    name: "questionAnswer",
+    description: "The answer to the question",
     parameters: {
-      type: 'object',
+      type: "object",
       properties: {
         answer: {
-          type: 'string',
-          description: 'The answer to the question',
+          type: "string",
+          description: "The answer to the question",
         },
         followupQuestions: {
-          type: 'array',
+          type: "array",
           items: {
-            type: 'string',
-            description: 'Followup questions the student should also ask',
+            type: "string",
+            description: "Followup questions the student should also ask",
           },
         },
       },
-      required: ['answer', 'followupQuestions'],
+      required: ["answer", "followupQuestions"],
     },
   },
 };

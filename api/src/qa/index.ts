@@ -1,13 +1,13 @@
-import { SupabaseDatabase } from 'database.js';
-import { ChatOpenAI } from 'langchain/chat_models/openai';
-import { Document } from 'langchain/document';
-import { ArxivPaperNote } from 'notes/prompt.js';
+import { SupabaseDatabase } from "database.js";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { Document } from "langchain/document";
+import { ArxivPaperNote } from "notes/prompt.js";
 import {
   ANSWER_QUESTION_TOOL_SCHEMA,
   QA_OVER_PAPER_PROMPT,
   answerOutputParser,
-} from './prompt.js';
-import { formatDocumentsAsString } from 'langchain/util/document';
+} from "./prompt.js";
+import { formatDocumentsAsString } from "langchain/util/document";
 
 async function qaModel(
   question: string,
@@ -15,20 +15,20 @@ async function qaModel(
   notes: Array<ArxivPaperNote>
 ) {
   const model = new ChatOpenAI({
-    modelName: 'gpt-4-1106-preview',
+    modelName: "gpt-4-1106-preview",
     temperature: 0,
   });
   const modelWithTools = model.bind({
     tools: [ANSWER_QUESTION_TOOL_SCHEMA],
-    tool_choice: 'auto',
+    tool_choice: "auto",
   });
   const chain =
     QA_OVER_PAPER_PROMPT.pipe(modelWithTools).pipe(answerOutputParser);
-    if (!documents) {
-      throw new Error("No documents found")
-    }
+  if (!documents) {
+    throw new Error("No documents found");
+  }
   const documentsAsString = formatDocumentsAsString(documents);
-  const notesAsString = notes.map((note) => note.note).join('\n');
+  const notesAsString = notes.map((note) => note.note).join("\n");
   const response = await chain.invoke({
     relevantDocuments: documentsAsString,
     notes: notesAsString,

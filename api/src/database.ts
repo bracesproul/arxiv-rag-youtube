@@ -1,22 +1,22 @@
-import { Document } from 'langchain/document';
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
-import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { Database } from 'generated/db.js';
-import { ArxivPaperNote } from 'notes/prompt.js';
+import { Document } from "langchain/document";
+import { SupabaseClient, createClient } from "@supabase/supabase-js";
+import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { Database } from "generated/db.js";
+import { ArxivPaperNote } from "notes/prompt.js";
 
-export const ARXIV_PAPERS_TABLE = 'arxiv_papers';
-export const ARXIV_EMBEDDINGS_TABLE = 'arxiv_embeddings';
-export const ARXIV_QA_TABLE = 'arxiv_question_answering';
+export const ARXIV_PAPERS_TABLE = "arxiv_papers";
+export const ARXIV_EMBEDDINGS_TABLE = "arxiv_embeddings";
+export const ARXIV_QA_TABLE = "arxiv_question_answering";
 
 export class SupabaseDatabase {
   vectorStore: SupabaseVectorStore;
 
-  client: SupabaseClient<Database, 'public', any>;
+  client: SupabaseClient<Database, "public", any>;
 
   constructor(
     vectorStore: SupabaseVectorStore,
-    client: SupabaseClient<Database, 'public', any>
+    client: SupabaseClient<Database, "public", any>
   ) {
     this.vectorStore = vectorStore;
     this.client = client;
@@ -36,7 +36,7 @@ export class SupabaseDatabase {
       {
         client,
         tableName: ARXIV_EMBEDDINGS_TABLE,
-        queryName: 'match_documents',
+        queryName: "match_documents",
       }
     );
 
@@ -58,7 +58,7 @@ export class SupabaseDatabase {
       {
         client,
         tableName: ARXIV_EMBEDDINGS_TABLE,
-        queryName: 'match_documents',
+        queryName: "match_documents",
       }
     );
 
@@ -76,27 +76,31 @@ export class SupabaseDatabase {
     notes: Array<ArxivPaperNote>;
     name: string;
   }): Promise<void> {
-    const { error } = await this.client.from(ARXIV_PAPERS_TABLE).insert([{
-      paper,
-      arxiv_url: url,
-      notes,
-      name,
-    }]);
+    const { error } = await this.client.from(ARXIV_PAPERS_TABLE).insert([
+      {
+        paper,
+        arxiv_url: url,
+        notes,
+        name,
+      },
+    ]);
     if (error) {
-      throw new Error('Error adding paper to database' + JSON.stringify(error, null, 2));
+      throw new Error(
+        "Error adding paper to database" + JSON.stringify(error, null, 2)
+      );
     }
   }
 
   async getPaper(
     url: string
-  ): Promise<Database['public']['Tables']['arxiv_papers']['Row'] | null> {
+  ): Promise<Database["public"]["Tables"]["arxiv_papers"]["Row"] | null> {
     const { data, error } = await this.client
       .from(ARXIV_PAPERS_TABLE)
       .select()
-      .eq('arxiv_url', url);
+      .eq("arxiv_url", url);
 
     if (error || !data) {
-      console.error('Error getting paper from database');
+      console.error("Error getting paper from database");
       return null;
     }
     return data[0];
@@ -115,7 +119,7 @@ export class SupabaseDatabase {
       followup_questions: followupQuestions,
     });
     if (error) {
-      console.error('Error saving QA to database');
+      console.error("Error saving QA to database");
       throw error;
     }
   }

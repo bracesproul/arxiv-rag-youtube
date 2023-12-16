@@ -1,23 +1,23 @@
-import { Document } from 'langchain/document';
-import { ChatOpenAI } from 'langchain/chat_models/openai';
-import { formatDocumentsAsString } from 'langchain/util/document';
+import { Document } from "langchain/document";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { formatDocumentsAsString } from "langchain/util/document";
 import {
   ArxivPaperNote,
   NOTES_TOOL_SCHEMA,
   NOTE_PROMPT,
   outputParser,
-} from 'notes/prompt.js';
-import { SupabaseDatabase } from 'database.js';
-import { writeFile, unlink } from 'fs/promises';
-import { UnstructuredLoader } from 'langchain/document_loaders/fs/unstructured';
-import axios from 'axios';
-import { PDFDocument } from 'pdf-lib';
+} from "notes/prompt.js";
+import { SupabaseDatabase } from "database.js";
+import { writeFile, unlink } from "fs/promises";
+import { UnstructuredLoader } from "langchain/document_loaders/fs/unstructured";
+import axios from "axios";
+import { PDFDocument } from "pdf-lib";
 
 async function loadPdfFromUrl(url: string): Promise<Buffer> {
   const response = await axios({
-    method: 'GET',
+    method: "GET",
     url,
-    responseType: 'arraybuffer',
+    responseType: "arraybuffer",
   });
   return response.data;
 }
@@ -41,12 +41,12 @@ async function generateNotes(
 ): Promise<Array<ArxivPaperNote>> {
   const documentsAsString = formatDocumentsAsString(documents);
   const model = new ChatOpenAI({
-    modelName: 'gpt-4-1106-preview',
+    modelName: "gpt-4-1106-preview",
     temperature: 0,
   });
   const modelWithTools = model.bind({
     tools: [NOTES_TOOL_SCHEMA],
-    tool_choice: 'auto',
+    tool_choice: "auto",
   });
   const chain = NOTE_PROMPT.pipe(modelWithTools).pipe(outputParser);
   const response = await chain.invoke({
@@ -57,14 +57,14 @@ async function generateNotes(
 
 async function convertPdfToDocuments(pdf: Buffer): Promise<Array<Document>> {
   if (!process.env.UNSTRUCTURED_API_KEY) {
-    throw new Error('Missing UNSTRUCTURED_API_KEY');
+    throw new Error("Missing UNSTRUCTURED_API_KEY");
   }
   const randomName = Math.random().toString(36).substring(7);
   const pdfPath = `pdfs/${randomName}.pdf`;
-  await writeFile(pdfPath, pdf, 'binary');
+  await writeFile(pdfPath, pdf, "binary");
   const loader = new UnstructuredLoader(pdfPath, {
     apiKey: process.env.UNSTRUCTURED_API_KEY,
-    strategy: 'hi_res',
+    strategy: "hi_res",
   });
   const docs = await loader.load();
   /** Delete the temporary PDF file. */
