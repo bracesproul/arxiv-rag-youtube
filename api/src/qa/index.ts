@@ -43,7 +43,11 @@ export async function qaOnPaper(question: string, paperUrl: string) {
   const documents = await database.vectorStore.similaritySearch(question, 8, {
     url: paperUrl,
   });
-  const { notes } = await database.getPaper(paperUrl);
+  const paper = await database.getPaper(paperUrl);
+  if (!paper?.notes) {
+    throw new Error("No notes found");
+  }
+  const { notes } = paper;
   const answerAndQuestions = await qaModel(
     question,
     documents,
