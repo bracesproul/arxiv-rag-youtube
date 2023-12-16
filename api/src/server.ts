@@ -24,7 +24,6 @@ function main() {
     const pagesToDeleteArray = pagesToDelete
       ? processPagesToDelete(pagesToDelete)
       : undefined;
-    console.log(pagesToDeleteArray);
     const notes = await takeNotes(paperUrl, name, pagesToDeleteArray);
     res.status(200).send(notes);
     return;

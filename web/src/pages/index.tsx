@@ -73,7 +73,6 @@ export default function Home() {
       return null;
     });
     if (response) {
-      console.log(response);
       setNotes(response);
     } else {
       throw new Error("Something went wrong taking notes");
@@ -98,7 +97,6 @@ export default function Home() {
       return null;
     });
     if (response) {
-      console.log(response);
       setAnswers(response);
     } else {
       throw new Error("Something went wrong taking notes");
