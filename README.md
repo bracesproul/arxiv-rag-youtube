@@ -19,6 +19,7 @@ Create a `.env.development.local` file in the `./api` directory with the followi
 UNSTRUCTURED_API_KEY=<YOUR_API_KEY>
 SUPABASE_PRIVATE_KEY=<YOUR_API_KEY>
 SUPABASE_URL=<YOUR_URL>
+OPENAI_API_KEY=<YOUR_API_KEY>
 ```
 
 ### Starting Unstructured with Docker
